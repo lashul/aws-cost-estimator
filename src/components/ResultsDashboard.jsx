@@ -11,6 +11,7 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
   const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
   const formatRate = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 5 }).format(val);
   const formatNumber = (val) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(val);
+  const formatTB = (val) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
   const CalcPopup = ({ show, onClose, title, children }) => {
     if (!show) return null;
@@ -66,7 +67,7 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
             </span>
             <span>{formatCurrency(data.storageFee)}</span>
             <CalcPopup show={openPopup === 'storage'} onClose={() => setOpenPopup(null)} title="Storage Calculation">
-              <p>Steady State Storage: {formatNumber(costs.storage.steadyStateGB)} GB</p>
+              <p>Steady State Storage: {formatTB(costs.storage.steadyStateGB / 1024)} TB</p>
               <p>Storage Rate: {formatRate(tierPricing.storage)} / GB</p>
               <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>= {formatCurrency(data.storageFee)}</p>
             </CalcPopup>
@@ -139,7 +140,7 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
           <div className="metric-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
             Steady State Storage <Info size={12} />
           </div>
-          <div className="metric-value text-accent">{formatNumber(costs.storage.steadyStateGB)} GB</div>
+          <div className="metric-value text-accent">{formatTB(costs.storage.steadyStateGB / 1024)} TB</div>
           
           <CalcPopup show={showStorageCalc} onClose={() => setShowStorageCalc(false)} title="Storage Calculation">
             <p style={{ marginBottom: '0.25rem' }}>Base Storage = {formatNumber(inputs.storageConsumedTB * 1024)} GB</p>
