@@ -4,7 +4,8 @@ export const calculateCosts = (inputs, pricing) => {
     averageFileSizeMB,
     dailyChangeRatePercent,
     retentionDays,
-    monthlyDataRetrievedGB
+    monthlyDataRetrievedGB,
+    multipartSizeMB = 16
   } = inputs;
 
   const storageConsumedGB = storageConsumedTB * 1024;
@@ -27,8 +28,10 @@ export const calculateCosts = (inputs, pricing) => {
   // 2. API Requests Calculation
   // Estimate number of files changed daily
   const dailyChangedFiles = (dailyChangeGB * 1024) / averageFileSizeMB;
-  // Account for Multipart Uploads (files > 5MB are split into 5MB parts, each is a PUT request)
-  const putsPerFile = Math.ceil(averageFileSizeMB / 5);
+  // Account for Multipart Uploads (files are split into chunks, each is a PUT request)
+  // AWS minimum part size is 5MB.
+  const actualPartSize = Math.max(5, multipartSizeMB);
+  const putsPerFile = Math.ceil(averageFileSizeMB / actualPartSize);
   const monthlyPutRequests = (dailyChangedFiles * 30) * putsPerFile;
   
   // Base cost per 1000 requests
@@ -132,5 +135,6 @@ export const defaultInputs = {
   averageFileSizeMB: 2,         // 2 MB average file
   dailyChangeRatePercent: 2,    // 2% daily change
   retentionDays: 30,            // 30 days retention
-  monthlyDataRetrievedGB: 10    // 10 GB restored per month
+  monthlyDataRetrievedGB: 10,   // 10 GB restored per month
+  multipartSizeMB: 16           // 16 MB multipart chunk size
 };

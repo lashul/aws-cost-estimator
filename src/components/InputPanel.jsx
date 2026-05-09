@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, FileDigit, Activity, CalendarClock, Download } from 'lucide-react';
+import { Database, FileDigit, Activity, CalendarClock, Download, Layers } from 'lucide-react';
 
 export const InputPanel = ({ inputs, setInputs }) => {
   const handleChange = (e) => {
@@ -48,6 +48,23 @@ export const InputPanel = ({ inputs, setInputs }) => {
           </div>
         </div>
 
+        <div className="form-group">
+          <label>Multipart Chunk Size (MB)</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Layers size={16} className="text-muted" />
+            <input 
+              type="number" 
+              name="multipartSizeMB" 
+              value={inputs.multipartSizeMB} 
+              onChange={handleChange}
+              min="5"
+              max="5120"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid-2">
         <div className="form-group">
           <label>Daily Change Rate (%)</label>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
