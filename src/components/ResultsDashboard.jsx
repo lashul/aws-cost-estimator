@@ -162,8 +162,9 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
           
           <CalcPopup show={showCalc} onClose={() => setShowCalc(false)} title="PUT Requests Calculation">
             <p style={{ marginBottom: '0.25rem' }}>Daily Change = {formatNumber(inputs.storageConsumedTB * 1024 * (inputs.dailyChangeRatePercent/100))} GB</p>
-            <p style={{ marginBottom: '0.25rem' }}>Daily Files = {formatNumber(costs.apiCalls.monthlyPuts / 30)} (Daily Change GB * 1024 / {inputs.averageFileSizeMB} MB)</p>
-            <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>Monthly PUTs = Daily Files * 30 days</p>
+            <p style={{ marginBottom: '0.25rem' }}>Daily Files = {formatNumber(((inputs.storageConsumedTB * 1024 * (inputs.dailyChangeRatePercent/100)) * 1024) / inputs.averageFileSizeMB)}</p>
+            <p style={{ marginBottom: '0.25rem' }}>Parts per File = {Math.ceil(inputs.averageFileSizeMB / 5)} (5MB limit)</p>
+            <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>Monthly PUTs = Daily Files * 30 days * Parts</p>
           </CalcPopup>
         </div>
 

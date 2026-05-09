@@ -27,7 +27,9 @@ export const calculateCosts = (inputs, pricing) => {
   // 2. API Requests Calculation
   // Estimate number of files changed daily
   const dailyChangedFiles = (dailyChangeGB * 1024) / averageFileSizeMB;
-  const monthlyPutRequests = (dailyChangedFiles * 30);
+  // Account for Multipart Uploads (files > 5MB are split into 5MB parts, each is a PUT request)
+  const putsPerFile = Math.ceil(averageFileSizeMB / 5);
+  const monthlyPutRequests = (dailyChangedFiles * 30) * putsPerFile;
   
   // Base cost per 1000 requests
   const s3PutCost = (monthlyPutRequests / 1000) * s3StandardPut;

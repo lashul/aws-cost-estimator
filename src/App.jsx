@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { CloudRain } from 'lucide-react';
 import { InputPanel } from './components/InputPanel';
 import { PricingSettings } from './components/PricingSettings';
+import { SaveLoadPanel } from './components/SaveLoadPanel';
 import { ResultsDashboard } from './components/ResultsDashboard';
 import { calculateCosts, defaultInputs, defaultPricing } from './utils/calculator';
 import './index.css';
@@ -28,6 +29,7 @@ function App() {
         <section className="left-column">
           <InputPanel inputs={inputs} setInputs={setInputs} />
           <PricingSettings pricing={pricing} setPricing={setPricing} />
+          <SaveLoadPanel inputs={inputs} pricing={pricing} setInputs={setInputs} setPricing={setPricing} />
         </section>
         
         <section className="right-column">
