@@ -38,11 +38,16 @@ export const calculateCosts = (inputs, pricing) => {
   const initialPutRequests = initialFiles * putsPerFile;
   
   // Base cost per 1000 requests
-  const s3PutCost = ((monthlyPutRequests + initialPutRequests) / 1000) * s3StandardPut;
-  const s3IAPutCost = ((monthlyPutRequests + initialPutRequests) / 1000) * s3StandardIAPut;
-  const glacierInstantPutCost = ((monthlyPutRequests + initialPutRequests) / 1000) * glacierInstantPut;
-  const glacierFlexPutCost = ((monthlyPutRequests + initialPutRequests) / 1000) * glacierFlexiblePut;
-  const glacierDeepPutCost = ((monthlyPutRequests + initialPutRequests) / 1000) * glacierDeepPut;
+  const s3PutCost = (monthlyPutRequests / 1000) * s3StandardPut;
+  const s3InitialPutCost = (initialPutRequests / 1000) * s3StandardPut;
+  const s3IAPutCost = (monthlyPutRequests / 1000) * s3StandardIAPut;
+  const s3IAInitialPutCost = (initialPutRequests / 1000) * s3StandardIAPut;
+  const glacierInstantPutCost = (monthlyPutRequests / 1000) * glacierInstantPut;
+  const glacierInstantInitialPutCost = (initialPutRequests / 1000) * glacierInstantPut;
+  const glacierFlexPutCost = (monthlyPutRequests / 1000) * glacierFlexiblePut;
+  const glacierFlexInitialPutCost = (initialPutRequests / 1000) * glacierFlexiblePut;
+  const glacierDeepPutCost = (monthlyPutRequests / 1000) * glacierDeepPut;
+  const glacierDeepInitialPutCost = (initialPutRequests / 1000) * glacierDeepPut;
 
   // 3. Retrieval & Egress Calculation
   // Assuming basic GET requests for the retrieved data
@@ -72,40 +77,49 @@ export const calculateCosts = (inputs, pricing) => {
     tiers: {
       s3Standard: {
         storageFee: totalSteadyStateStorageGB * s3StandardStorage,
-        apiFee: s3PutCost + s3GetCost,
+        apiFee: s3PutCost + s3GetCost, // monthly PUTs only
         retrievalFee: s3RetrievalCost,
         egressFee: egressCost,
-        total: (totalSteadyStateStorageGB * s3StandardStorage) + s3PutCost + s3GetCost + s3RetrievalCost + egressCost
+        initialPutCost: s3InitialPutCost,
+        total: (totalSteadyStateStorageGB * s3StandardStorage) + s3PutCost + s3GetCost + s3RetrievalCost + egressCost,
+        yearlyTotal: ((totalSteadyStateStorageGB * s3StandardStorage) + s3PutCost + s3GetCost + s3RetrievalCost + egressCost) * 12 + s3InitialPutCost
       },
       s3StandardIA: {
         storageFee: totalSteadyStateStorageGB * s3StandardIAStorage,
-        apiFee: s3IAPutCost + s3IAGetCost,
+        apiFee: s3IAPutCost + s3IAGetCost, // monthly PUTs only
         retrievalFee: s3IARetrievalCost,
         egressFee: egressCost,
-        total: (totalSteadyStateStorageGB * s3StandardIAStorage) + s3IAPutCost + s3IAGetCost + s3IARetrievalCost + egressCost
+        initialPutCost: s3IAInitialPutCost,
+        total: (totalSteadyStateStorageGB * s3StandardIAStorage) + s3IAPutCost + s3IAGetCost + s3IARetrievalCost + egressCost,
+        yearlyTotal: ((totalSteadyStateStorageGB * s3StandardIAStorage) + s3IAPutCost + s3IAGetCost + s3IARetrievalCost + egressCost) * 12 + s3IAInitialPutCost
       },
       glacierInstant: {
         storageFee: totalSteadyStateStorageGB * glacierInstantStorage,
-        apiFee: glacierInstantPutCost + s3GetCost,
+        apiFee: glacierInstantPutCost + s3GetCost, // monthly PUTs only
         retrievalFee: glacierInstantRetrievalCost,
         egressFee: egressCost,
-        total: (totalSteadyStateStorageGB * glacierInstantStorage) + glacierInstantPutCost + s3GetCost + glacierInstantRetrievalCost + egressCost
+        initialPutCost: glacierInstantInitialPutCost,
+        total: (totalSteadyStateStorageGB * glacierInstantStorage) + glacierInstantPutCost + s3GetCost + glacierInstantRetrievalCost + egressCost,
+        yearlyTotal: ((totalSteadyStateStorageGB * glacierInstantStorage) + glacierInstantPutCost + s3GetCost + glacierInstantRetrievalCost + egressCost) * 12 + glacierInstantInitialPutCost
       },
       glacierFlexible: {
         storageFee: totalSteadyStateStorageGB * glacierFlexibleStorage,
-        apiFee: glacierFlexPutCost + s3GetCost, // Uses standard get for simplicity or specific
+        apiFee: glacierFlexPutCost + s3GetCost, // monthly PUTs only, uses standard get for simplicity
         retrievalFee: glacierFlexRetrievalCost,
         egressFee: egressCost,
-        total: (totalSteadyStateStorageGB * glacierFlexibleStorage) + glacierFlexPutCost + s3GetCost + glacierFlexRetrievalCost + egressCost
+        initialPutCost: glacierFlexInitialPutCost,
+        total: (totalSteadyStateStorageGB * glacierFlexibleStorage) + glacierFlexPutCost + s3GetCost + glacierFlexRetrievalCost + egressCost,
+        yearlyTotal: ((totalSteadyStateStorageGB * glacierFlexibleStorage) + glacierFlexPutCost + s3GetCost + glacierFlexRetrievalCost + egressCost) * 12 + glacierFlexInitialPutCost
       },
       glacierDeepArchive: {
         storageFee: totalSteadyStateStorageGB * glacierDeepStorage,
-        apiFee: glacierDeepPutCost + s3GetCost,
+        apiFee: glacierDeepPutCost + s3GetCost, // monthly PUTs only
         retrievalFee: glacierDeepRetrievalCost,
         egressFee: egressCost,
-        total: (totalSteadyStateStorageGB * glacierDeepStorage) + glacierDeepPutCost + s3GetCost + glacierDeepRetrievalCost + egressCost
-      }
-    }
+        initialPutCost: glacierDeepInitialPutCost,
+        total: (totalSteadyStateStorageGB * glacierDeepStorage) + glacierDeepPutCost + s3GetCost + glacierDeepRetrievalCost + egressCost,
+        yearlyTotal: ((totalSteadyStateStorageGB * glacierDeepStorage) + glacierDeepPutCost + s3GetCost + glacierDeepRetrievalCost + egressCost) * 12 + glacierDeepInitialPutCost
+      }    }
   };
 };
 

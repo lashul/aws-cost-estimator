@@ -5,6 +5,7 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
   const [showCalc, setShowCalc] = useState(false);
   const [showStorageCalc, setShowStorageCalc] = useState(false);
   const [showGetCalc, setShowGetCalc] = useState(false);
+  const [showInitialCalc, setShowInitialCalc] = useState(false);
 
   if (!costs || !pricing) return null;
 
@@ -79,12 +80,11 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
             </span>
             <span>{formatCurrency(data.apiFee)}</span>
             <CalcPopup show={openPopup === 'api'} onClose={() => setOpenPopup(null)} title="API Calculation">
-              <p>Monthly Puts: {formatNumber(costs.apiCalls.monthlyPuts)}</p>
-              <p>Initial Upload Puts: {formatNumber(costs.apiCalls.initialPuts)}</p>
-              <p>Total Puts: {formatNumber(costs.apiCalls.monthlyPuts + costs.apiCalls.initialPuts)}</p>
-              <p style={{ marginTop: '0.5rem' }}>Monthly Gets: {formatNumber(costs.apiCalls.monthlyGets)}</p>
-              <p>Get Rate: {formatRate(tierPricing.get)} / 1000</p>
-              <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>= {formatCurrency(data.apiFee)}</p>
+              <p>Monthly PUTs: {formatNumber(costs.apiCalls.monthlyPuts)}</p>
+              <p>Initial Upload PUTs: {formatNumber(costs.apiCalls.initialPuts)}</p>
+              <p>Total PUTs (initial + monthly): {formatNumber(costs.apiCalls.monthlyPuts + costs.apiCalls.initialPuts)}</p>
+              <p>One‑time Initial Upload Cost: {formatCurrency(data.initialPutCost)}</p>
+              <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>= {formatCurrency(data.apiFee + data.initialPutCost)}</p>
             </CalcPopup>
           </div>
 
@@ -117,8 +117,12 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
             <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--accent-color)' }}>{formatCurrency(data.total)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem' }}>
-            <span style={{ fontWeight: '500', color: 'var(--text-muted)' }}>Total Annual</span>
-            <span style={{ fontSize: '1.1rem', fontWeight: '500', color: 'var(--text-main)' }}>{formatCurrency(data.total * 12)}</span>
+            <span style={{ fontWeight: '500', color: 'var(--text-muted)' }}>One‑time Initial Upload</span>
+            <span style={{ fontSize: '1.1rem', fontWeight: '500', color: 'var(--accent-color)' }}>{formatCurrency(data.initialPutCost)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem' }}>
+            <span style={{ fontWeight: '500', color: 'var(--text-muted)' }}>Yearly Total (incl. initial)</span>
+            <span style={{ fontSize: '1.1rem', fontWeight: '500', color: 'var(--text-main)' }}>{formatCurrency(data.yearlyTotal)}</span>
           </div>
         </div>
       </div>
@@ -132,7 +136,7 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
         <h2 style={{ margin: 0 }}>Estimated Monthly Costs</h2>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
         <div 
           className="metric-card" 
           style={{ cursor: 'pointer', position: 'relative' }}
@@ -157,11 +161,11 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
           onClick={() => setShowCalc(!showCalc)}
         >
           <div className="metric-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
-            Est. Monthly PUTs <Info size={12} />
+              Est. Monthly PUTs <Info size={12} />
           </div>
-          <div className="metric-value">{formatNumber(costs.apiCalls.monthlyPuts + costs.apiCalls.initialPuts)} puts</div>
+          <div className="metric-value">{formatNumber(costs.apiCalls.monthlyPuts)} puts</div>
           
-          <CalcPopup show={showCalc} onClose={() => setShowCalc(false)} title="PUT Requests Calculation">
+          <CalcPopup show={showCalc} onClose={() => setShowCalc(false)} title="Monthly PUT Requests Calculation">
             <p style={{ marginBottom: '0.25rem' }}>Daily Change = {formatNumber(inputs.storageConsumedTB * 1024 * (inputs.dailyChangeRatePercent/100))} GB</p>
             <p style={{ marginBottom: '0.25rem' }}>Daily Files = {formatNumber(((inputs.storageConsumedTB * 1024 * (inputs.dailyChangeRatePercent/100)) * 1024) / inputs.averageFileSizeMB)}</p>
             <p style={{ marginBottom: '0.25rem' }}>Parts per File = {Math.ceil(inputs.averageFileSizeMB / Math.max(5, inputs.multipartSizeMB))} ({Math.max(5, inputs.multipartSizeMB)}MB chunks)</p>
@@ -175,7 +179,7 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
           onClick={() => setShowGetCalc(!showGetCalc)}
         >
           <div className="metric-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
-            Est. Monthly GETs <Info size={12} />
+              Est. Monthly GETs <Info size={12} />
           </div>
           <div className="metric-value">{formatNumber(costs.apiCalls.monthlyGets)} gets</div>
           
@@ -183,6 +187,23 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
             <p style={{ marginBottom: '0.25rem' }}>Monthly Retrieved = {formatNumber(inputs.monthlyDataRetrievedGB)} GB</p>
             <p style={{ marginBottom: '0.25rem' }}>Retrieved Files = {formatNumber(costs.apiCalls.monthlyGets)} (Monthly Retrieved GB * 1024 / {inputs.averageFileSizeMB} MB)</p>
             <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>Monthly GETs = Retrieved Files</p>
+          </CalcPopup>
+        </div>
+
+        <div 
+          className="metric-card" 
+          style={{ cursor: 'pointer', position: 'relative' }}
+          onClick={() => setShowInitialCalc(!showInitialCalc)}
+        >
+          <div className="metric-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+              Initial Upload PUTs <Info size={12} />
+          </div>
+          <div className="metric-value">{formatNumber(costs.apiCalls.initialPuts)} puts</div>
+          
+          <CalcPopup show={showInitialCalc} onClose={() => setShowInitialCalc(false)} title="Initial PUT Requests Calculation">
+            <p style={{ marginBottom: '0.25rem' }}>Initial Files = (Steady State Storage {formatTB(costs.storage.steadyStateGB / 1024)} TB × 1024) / Avg File Size {inputs.averageFileSizeMB} MB = {formatNumber((costs.storage.steadyStateGB * 1024) / inputs.averageFileSizeMB)} files</p>
+            <p style={{ marginBottom: '0.25rem' }}>Parts per File = {Math.ceil(inputs.averageFileSizeMB / Math.max(5, inputs.multipartSizeMB))} ({Math.max(5, inputs.multipartSizeMB)}MB chunks)</p>
+            <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>Initial PUTs = Files * Parts = {formatNumber(costs.apiCalls.initialPuts)} puts</p>
           </CalcPopup>
         </div>
       </div>
