@@ -33,13 +33,16 @@ export const calculateCosts = (inputs, pricing) => {
   const actualPartSize = Math.max(5, multipartSizeMB);
   const putsPerFile = Math.ceil(averageFileSizeMB / actualPartSize);
   const monthlyPutRequests = (dailyChangedFiles * 30) * putsPerFile;
+  // Initial full backup upload PUT requests
+  const initialFiles = (storageConsumedGB * 1024) / averageFileSizeMB;
+  const initialPutRequests = initialFiles * putsPerFile;
   
   // Base cost per 1000 requests
-  const s3PutCost = (monthlyPutRequests / 1000) * s3StandardPut;
-  const s3IAPutCost = (monthlyPutRequests / 1000) * s3StandardIAPut;
-  const glacierInstantPutCost = (monthlyPutRequests / 1000) * glacierInstantPut;
-  const glacierFlexPutCost = (monthlyPutRequests / 1000) * glacierFlexiblePut;
-  const glacierDeepPutCost = (monthlyPutRequests / 1000) * glacierDeepPut;
+  const s3PutCost = ((monthlyPutRequests + initialPutRequests) / 1000) * s3StandardPut;
+  const s3IAPutCost = ((monthlyPutRequests + initialPutRequests) / 1000) * s3StandardIAPut;
+  const glacierInstantPutCost = ((monthlyPutRequests + initialPutRequests) / 1000) * glacierInstantPut;
+  const glacierFlexPutCost = ((monthlyPutRequests + initialPutRequests) / 1000) * glacierFlexiblePut;
+  const glacierDeepPutCost = ((monthlyPutRequests + initialPutRequests) / 1000) * glacierDeepPut;
 
   // 3. Retrieval & Egress Calculation
   // Assuming basic GET requests for the retrieved data
@@ -63,6 +66,7 @@ export const calculateCosts = (inputs, pricing) => {
     },
     apiCalls: {
       monthlyPuts: monthlyPutRequests,
+      initialPuts: initialPutRequests,
       monthlyGets: retrievedFiles,
     },
     tiers: {

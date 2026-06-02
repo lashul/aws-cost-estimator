@@ -80,7 +80,8 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
             <span>{formatCurrency(data.apiFee)}</span>
             <CalcPopup show={openPopup === 'api'} onClose={() => setOpenPopup(null)} title="API Calculation">
               <p>Monthly Puts: {formatNumber(costs.apiCalls.monthlyPuts)}</p>
-              <p>Put Rate: {formatRate(tierPricing.put)} / 1000</p>
+              <p>Initial Upload Puts: {formatNumber(costs.apiCalls.initialPuts)}</p>
+              <p>Total Puts: {formatNumber(costs.apiCalls.monthlyPuts + costs.apiCalls.initialPuts)}</p>
               <p style={{ marginTop: '0.5rem' }}>Monthly Gets: {formatNumber(costs.apiCalls.monthlyGets)}</p>
               <p>Get Rate: {formatRate(tierPricing.get)} / 1000</p>
               <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>= {formatCurrency(data.apiFee)}</p>
@@ -158,7 +159,7 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
           <div className="metric-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
             Est. Monthly PUTs <Info size={12} />
           </div>
-          <div className="metric-value">{formatNumber(costs.apiCalls.monthlyPuts)} puts</div>
+          <div className="metric-value">{formatNumber(costs.apiCalls.monthlyPuts + costs.apiCalls.initialPuts)} puts</div>
           
           <CalcPopup show={showCalc} onClose={() => setShowCalc(false)} title="PUT Requests Calculation">
             <p style={{ marginBottom: '0.25rem' }}>Daily Change = {formatNumber(inputs.storageConsumedTB * 1024 * (inputs.dailyChangeRatePercent/100))} GB</p>
