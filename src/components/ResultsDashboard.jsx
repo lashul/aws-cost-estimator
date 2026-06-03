@@ -116,9 +116,16 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
             <span style={{ fontWeight: 'bold' }}>Total Monthly</span>
             <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--accent-color)' }}>{formatCurrency(data.total)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem' }}>
-            <span style={{ fontWeight: '500', color: 'var(--text-muted)' }}>One‑time Initial Upload</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem', cursor: 'pointer', position: 'relative' }} onClick={() => handlePopup('initialPut')}>
+            <span style={{ fontWeight: '500', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              One‑time Initial Upload <Info size={12} />
+            </span>
             <span style={{ fontSize: '1.1rem', fontWeight: '500', color: 'var(--accent-color)' }}>{formatCurrency(data.initialPutCost)}</span>
+            <CalcPopup show={openPopup === 'initialPut'} onClose={() => setOpenPopup(null)} title="Initial Upload Cost Calculation">
+              <p>Initial Upload PUTs: {formatNumber(costs.apiCalls.initialPuts)}</p>
+              <p>PUT Rate: {formatRate(tierPricing.put)} per 1,000 requests</p>
+              <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>= ({formatNumber(costs.apiCalls.initialPuts)} / 1,000) × {formatRate(tierPricing.put)} = {formatCurrency(data.initialPutCost)}</p>
+            </CalcPopup>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem' }}>
             <span style={{ fontWeight: '500', color: 'var(--text-muted)' }}>Yearly Total (incl. initial)</span>
@@ -167,9 +174,8 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
           
           <CalcPopup show={showCalc} onClose={() => setShowCalc(false)} title="Monthly PUT Requests Calculation">
             <p style={{ marginBottom: '0.25rem' }}>Daily Change = {formatNumber(inputs.storageConsumedTB * 1024 * (inputs.dailyChangeRatePercent/100))} GB</p>
-            <p style={{ marginBottom: '0.25rem' }}>Daily Files = {formatNumber(((inputs.storageConsumedTB * 1024 * (inputs.dailyChangeRatePercent/100)) * 1024) / inputs.averageFileSizeMB)}</p>
-            <p style={{ marginBottom: '0.25rem' }}>Parts per File = {Math.ceil(inputs.averageFileSizeMB / Math.max(5, inputs.multipartSizeMB))} ({Math.max(5, inputs.multipartSizeMB)}MB chunks)</p>
-            <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>Monthly PUTs = Daily Files * 30 days * Parts</p>
+            <p style={{ marginBottom: '0.25rem' }}>Monthly New Data = {formatNumber(inputs.storageConsumedTB * 1024 * (inputs.dailyChangeRatePercent/100) * 30)} GB</p>
+            <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>Monthly PUTs = (Monthly New Data GB × 1024) / {inputs.multipartSizeMB} MB = {formatNumber(costs.apiCalls.monthlyPuts)} puts</p>
           </CalcPopup>
         </div>
 
@@ -185,8 +191,7 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
           
           <CalcPopup show={showGetCalc} onClose={() => setShowGetCalc(false)} title="GET Requests Calculation">
             <p style={{ marginBottom: '0.25rem' }}>Monthly Retrieved = {formatNumber(inputs.monthlyDataRetrievedGB)} GB</p>
-            <p style={{ marginBottom: '0.25rem' }}>Retrieved Files = {formatNumber(costs.apiCalls.monthlyGets)} (Monthly Retrieved GB * 1024 / {inputs.averageFileSizeMB} MB)</p>
-            <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>Monthly GETs = Retrieved Files</p>
+            <p style={{ marginBottom: '0.25rem' }}>Monthly GETs = {formatNumber(costs.apiCalls.monthlyGets)} GB (data retrieved)</p>
           </CalcPopup>
         </div>
 
@@ -201,9 +206,8 @@ export const ResultsDashboard = ({ costs, inputs, pricing }) => {
           <div className="metric-value">{formatNumber(costs.apiCalls.initialPuts)} puts</div>
           
           <CalcPopup show={showInitialCalc} onClose={() => setShowInitialCalc(false)} title="Initial PUT Requests Calculation">
-            <p style={{ marginBottom: '0.25rem' }}>Initial Files = (Steady State Storage {formatTB(costs.storage.steadyStateGB / 1024)} TB × 1024) / Avg File Size {inputs.averageFileSizeMB} MB = {formatNumber((costs.storage.steadyStateGB * 1024) / inputs.averageFileSizeMB)} files</p>
-            <p style={{ marginBottom: '0.25rem' }}>Parts per File = {Math.ceil(inputs.averageFileSizeMB / Math.max(5, inputs.multipartSizeMB))} ({Math.max(5, inputs.multipartSizeMB)}MB chunks)</p>
-            <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>Initial PUTs = Files * Parts = {formatNumber(costs.apiCalls.initialPuts)} puts</p>
+            <p style={{ marginBottom: '0.25rem' }}>Initial Storage Consumed = {formatTB(inputs.storageConsumedTB)} TB ({formatNumber(inputs.storageConsumedTB * 1024)} GB)</p>
+            <p style={{ marginTop: '0.5rem', fontWeight: 'bold' }}>Initial PUTs = (Initial Storage GB × 1024) / {inputs.multipartSizeMB} MB = {formatNumber(costs.apiCalls.initialPuts)} puts</p>
           </CalcPopup>
         </div>
       </div>

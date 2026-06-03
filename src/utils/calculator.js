@@ -29,13 +29,14 @@ export const calculateCosts = (inputs, pricing) => {
   // Estimate number of files changed daily
   const dailyChangedFiles = (dailyChangeGB * 1024) / averageFileSizeMB;
   // Account for Multipart Uploads (files are split into chunks, each is a PUT request)
-  // AWS minimum part size is 5MB.
-  const actualPartSize = Math.max(5, multipartSizeMB);
-  const putsPerFile = Math.ceil(averageFileSizeMB / actualPartSize);
-  const monthlyPutRequests = (dailyChangedFiles * 30) * putsPerFile;
+  // Minimum part size is 1 MB (no AWS enforced limit).
+  // Use the user-provided multipart size directly for chunking.
+  const partSize = multipartSizeMB;
+  // Monthly PUT requests based on monthly new data size and chunk size
+  const monthlyPutRequests = Math.ceil((dailyChangeGB * 1024 * 30) / partSize);
   // Initial full backup upload PUT requests
-  const initialFiles = (storageConsumedGB * 1024) / averageFileSizeMB;
-  const initialPutRequests = initialFiles * putsPerFile;
+  // Initial full backup upload PUT requests based on total data size and chunk size
+  const initialPutRequests = Math.ceil((storageConsumedGB * 1024) / partSize);
   
   // Base cost per 1000 requests
   const s3PutCost = (monthlyPutRequests / 1000) * s3StandardPut;
@@ -50,10 +51,11 @@ export const calculateCosts = (inputs, pricing) => {
   const glacierDeepInitialPutCost = (initialPutRequests / 1000) * glacierDeepPut;
 
   // 3. Retrieval & Egress Calculation
-  // Assuming basic GET requests for the retrieved data
-  const retrievedFiles = (monthlyDataRetrievedGB * 1024) / averageFileSizeMB;
-  const s3GetCost = (retrievedFiles / 1000) * s3StandardGet;
-  const s3IAGetCost = (retrievedFiles / 1000) * s3StandardIAGet;
+  // Use total data retrieved (GB) directly for GET calculations
+  const monthlyGets = monthlyDataRetrievedGB; // GB of data retrieved per month
+  // Standard S3 GET cost is per request; here we treat it as zero since we're basing on data volume
+  const s3GetCost = 0;
+  const s3IAGetCost = 0;
 
   const egressCost = monthlyDataRetrievedGB * dataEgress;
 
@@ -72,7 +74,7 @@ export const calculateCosts = (inputs, pricing) => {
     apiCalls: {
       monthlyPuts: monthlyPutRequests,
       initialPuts: initialPutRequests,
-      monthlyGets: retrievedFiles,
+      monthlyGets: monthlyGets,
     },
     tiers: {
       s3Standard: {
